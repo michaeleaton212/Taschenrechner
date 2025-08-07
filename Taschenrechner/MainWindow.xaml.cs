@@ -1,16 +1,17 @@
 ﻿using System;
+using System.Linq.Expressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace Taschenrechner
+namespace Calculator
 {
     public partial class MainWindow : Window
     {
-        private string zahl1 = "";
-        private string zahl2 = "";
+        private string number1 = "";
+        private string number2 = "";
         private string op = "";
-        private bool operatorGedrueckt = false;
+        private bool operatorPressed = false;
 
         private double memory = 0;
         private double lastResult = 0;
@@ -25,56 +26,74 @@ namespace Taschenrechner
         private void Button_Click(object sender, RoutedEventArgs e) // method that is executed when button is clicked
         {
             var btn = sender as Button;
-            var inhalt = btn.Content.ToString();
+            var content = btn.Content.ToString();
 
 
             //button clicks are checked
-            if (double.TryParse(inhalt, out _) || inhalt == ".") 
+            if (double.TryParse(content, out _) || content == ".")
             {
-                if (!operatorGedrueckt)
-                    zahl1 += inhalt;
+                if (!operatorPressed)
+                    number1 += content;
                 else
-                    zahl2 += inhalt;
+                    number2 += content;
             }
-            else if (inhalt == "AC")
+            else if (content == "AC")
             {
-                zahl1 = "";
-                zahl2 = "";
+                number1 = "";
+                number2 = "";
                 op = "";
-                operatorGedrueckt = false;
+                operatorPressed = false;
                 memory = 0;
                 lastResult = 0;
                 UpdateMemoryLabel();
             }
-            else if (inhalt == "+" || inhalt == "-" || inhalt == "*" || inhalt == "/")
+            else if (content == "+" || content == "-" || content == "*" || content == "/")
             {
-                op = inhalt;
-                operatorGedrueckt = true;
+                op = content;
+                operatorPressed = true;
             }
-            else if (inhalt == "=")
+            else if (content == "=")
             {
-                Berechne();
+                Calculate();
             }
-            else if (inhalt == "←")
+            else if (content == "←")
             {
-                if (!operatorGedrueckt && zahl1.Length > 0)
-                    zahl1 = zahl1.Substring(0, zahl1.Length - 1);
-                else if (operatorGedrueckt && zahl2.Length > 0)
-                    zahl2 = zahl2.Substring(0, zahl2.Length - 1);
+                if (!operatorPressed && number1.Length > 0) // if operator is not activ take 1 from number2
+                {
+                    number1 = number1.Substring(0, number1.Length - 1);
+                }
+                else if (operatorPressed && number2.Length > 0)// if operator gedrükt ist take 1 from number1
+                {
+                    number2 = number2.Substring(0, number2.Length - 1);
+                }
+                else if (operatorPressed && number2.Length == 0 && op.Length > 0) //if the 3 cases are true op gets reset
+                {
+                    op = "";
+                    operatorPressed = false;
+                }
             }
-            else if (inhalt == "M+")
+            else if (content == "M+")
             {
-                memory += lastResult;
+                if (number1 != "" && !operatorPressed)
+                    memory += double.Parse(number1);
+                else
+                    memory += lastResult;
                 UpdateMemoryLabel();
             }
-            else if (inhalt == "M-")
+            else if (content == "M-")
             {
-                memory -= lastResult;
+                if (number1 != "" && !operatorPressed)
+                    memory -= double.Parse(number1);
+                else
+                    memory -= lastResult;
                 UpdateMemoryLabel();
             }
-            else if (inhalt == "MS")
+            else if (content == "MS")
             {
-                memory = lastResult;
+                if (number1 != "" && !operatorPressed)
+                    memory = double.Parse(number1);
+                else
+                    memory = lastResult;
                 UpdateMemoryLabel();
             }
 
@@ -82,12 +101,12 @@ namespace Taschenrechner
         }
 
         //calculations with the operator identified above
-        private void Berechne()
+        private void Calculate()
         {
             try
             {
-                double num1 = double.Parse(zahl1);
-                double num2 = double.Parse(zahl2);
+                double num1 = double.Parse(number1);
+                double num2 = double.Parse(number2);
                 double result = 0;
 
                 if (op == "+") result = num1 + num2;
@@ -97,8 +116,8 @@ namespace Taschenrechner
                 {
                     if (num2 == 0)
                     {
-                        MessageBox.Show("Durch 0 ist nicht definiert.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-                        zahl2 = "";
+                        MessageBox.Show("Division by 0 is not defined.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        number2 = "";
                         UpdateDisplay();
                         return;
                     }
@@ -109,18 +128,25 @@ namespace Taschenrechner
 
                 lastResult = result;
 
-                string eintrag = $"{num1} {op} {num2} = {result}";
-                VerlaufBox.Text = eintrag + Environment.NewLine + VerlaufBox.Text;
+
+                //Histroy
+                string entry = $"{num1} {op} {num2} = {result}";
+                HistoryBox.Text = entry + Environment.NewLine + HistoryBox.Text; //the one before goes one line down
+
+
+
 
                 Display.Text = result.ToString();
-                zahl1 = result.ToString();
-                zahl2 = "";
+                number1 = result.ToString();
+                number2 = "";
                 op = "";
-                operatorGedrueckt = false;
+                operatorPressed = false;
             }
-            catch
+            //error message
+            catch (Exception ex)
             {
-                Display.Text = "Fehler";
+                Display.Text = "Error";
+                MessageBox.Show($"Calculation error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error); //display system error text in message box
             }
         }
 
@@ -128,10 +154,12 @@ namespace Taschenrechner
         //display the numbers on the display
         private void UpdateDisplay()
         {
-            if (!operatorGedrueckt)
-                Display.Text = zahl1;
+            if (!operatorPressed)
+                Display.Text = number1;
+            else if (number2 == "")
+                Display.Text = number1 + " " + op;
             else
-                Display.Text = zahl2;
+                Display.Text = number1 + " " + op + " " + number2; 
         }
 
         //memory label display
@@ -159,11 +187,11 @@ namespace Taschenrechner
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Back)
-                SimuliereButtonEingabe("←");
+                SimulateButtonInput("←");
             else if (e.Key == Key.Escape)
-                SimuliereButtonEingabe("AC");
+                SimulateButtonInput("AC");
             else if (e.Key == Key.Return || e.Key == Key.Enter)
-                SimuliereButtonEingabe("=");
+                SimulateButtonInput("=");
         }
 
 
@@ -174,15 +202,17 @@ namespace Taschenrechner
             string input = e.Text;
 
             if ("0123456789.+-*/".Contains(input))
-                SimuliereButtonEingabe(input);
+                SimulateButtonInput(input);
         }
 
 
         // Simulates a button click using keyboard input
 
-        private void SimuliereButtonEingabe(string eingabe)
+        private void SimulateButtonInput(string input)
         {
-            Button_Click(new Button { Content = eingabe }, null);
+            Button_Click(new Button { Content = input }, null);
         }
     }
 }
+
+//updated
