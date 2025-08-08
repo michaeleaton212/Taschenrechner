@@ -62,7 +62,7 @@ namespace Calculator
                 {
                     number1 = number1.Substring(0, number1.Length - 1);
                 }
-                else if (operatorPressed && number2.Length > 0)// if operator gedrükt ist take 1 from number1
+                else if (operatorPressed && number2.Length > 0)// if operator activ is take 1 from number1
                 {
                     number2 = number2.Substring(0, number2.Length - 1);
                 }
@@ -130,16 +130,21 @@ namespace Calculator
 
 
                 //Histroy
-                string entry = $"{num1} {op} {num2} = {result}";
+                string entry = $"{num1} {op} {num2} = {result}";// values are saved in entry then linebreak and new values
                 HistoryBox.Text = entry + Environment.NewLine + HistoryBox.Text; //the one before goes one line down
 
 
 
+                //After successful calculator, reset
 
                 Display.Text = result.ToString();
+
                 number1 = result.ToString();
+
                 number2 = "";
+
                 op = "";
+
                 operatorPressed = false;
             }
             //error message
