@@ -122,6 +122,7 @@ namespace Calculator
             }
             else if (content == "M-")
             {
+                // if no memory exists, save current value as negative memory
                 if (memoryList.Count == 0)
                 {
                     double value = GetCurrentValueOrZero();
@@ -129,14 +130,18 @@ namespace Calculator
                 }
                 else
                 {
+                    // get index of selected memory
                     int idx = GetTargetMemoryIndex();
                     if (idx >= 0)
                     {
+                        // decrease selected memory value by its base amount
                         memoryList[idx].Value -= memoryList[idx].Base;
+                        // update memory display keeping selection on this entry
                         RefreshMemoryUI(idx);
                     }
                 }
             }
+
             else if (content == "MR")
             {
                 if (GetSelectedMemory() is MemoryItem m)//gets current memory and inserts it into current number
@@ -177,9 +182,12 @@ namespace Calculator
             return lastResult;
         }
 
+
+        //get saved memory value and insert into display
         private void InsertMemoryIntoCurrent(double value)
         {
-            string v = value.ToString(CultureInfo.InvariantCulture);
+
+            string v = value.ToString(CultureInfo.InvariantCulture);//in which number value gets inserted
             if (!operatorPressed)
                 number1 = v;
             else
@@ -187,30 +195,41 @@ namespace Calculator
             UpdateDisplay();
         }
 
+        // add new memory item to list and update memory display with the new entry
+
         private void AddToMemory(double value)
         {
             memoryList.Add(new MemoryItem(value));
             RefreshMemoryUI(memoryList.Count - 1);
         }
 
+
+        // refresh memory list display in the UI
+        // optionally keep a specific entry selected (preserveSelectionIndex) 
+        // or keep current selection if no index is provided
         private void RefreshMemoryUI(int? preserveSelectionIndex = null)
         {
+            // decide which memory index should stay selected
             int desiredIndex = preserveSelectionIndex ?? MemoryListBox.SelectedIndex;
 
+            // clear memory list in UI and add all memory items again
             MemoryListBox.Items.Clear();
             for (int i = 0; i < memoryList.Count; i++)
                 MemoryListBox.Items.Add(memoryList[i]);
 
             if (memoryList.Count > 0)
             {
+                // update memory label with count of stored entries and show it
                 MemoryLabel.Content = $"M: {memoryList.Count} Einträge";
                 MemoryLabel.Visibility = Visibility.Visible;
 
+                // reselect the previously selected memory item if valid
                 if (desiredIndex >= 0 && desiredIndex < MemoryListBox.Items.Count)
                     MemoryListBox.SelectedIndex = desiredIndex;
             }
             else
             {
+                // hide memory label if no entries exist and clear selection
                 MemoryLabel.Visibility = Visibility.Collapsed;
                 MemoryListBox.SelectedIndex = -1;
             }
