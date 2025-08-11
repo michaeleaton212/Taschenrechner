@@ -235,7 +235,7 @@ namespace Calculator
             }
         }
 
-        // Calculation
+        // Calculation Method
         private void Calculate()
         {
             try
@@ -243,28 +243,47 @@ namespace Calculator
                 if (string.IsNullOrWhiteSpace(number1) || string.IsNullOrWhiteSpace(op) || string.IsNullOrWhiteSpace(number2))
                     return;
 
-                double num1 = double.Parse(number1, CultureInfo.InvariantCulture);
+                double num1 = double.Parse(number1, CultureInfo.InvariantCulture);//from string into double, 
                 double num2 = double.Parse(number2, CultureInfo.InvariantCulture);
-                double result = op switch
+                double result;
+
+                if (op == "+")
                 {
-                    "+" => num1 + num2,
-                    "-" => num1 - num2,
-                    "*" => num1 * num2,
-                    "/" => num2 == 0 ? throw new DivideByZeroException() : num1 / num2,
-                    _ => throw new InvalidOperationException("Unknown operator")
-                };
+                    result = num1 + num2;
+                }
+                else if (op == "-")
+                {
+                    result = num1 - num2;
+                }
+                else if (op == "*")
+                {
+                    result = num1 * num2;
+                }
+                else if (op == "/")
+                {
+                    if (num2 == 0)
+                        throw new DivideByZeroException();
+                    else
+                        result = num1 / num2;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unknown operator"); // Abort the method and output an error
+                }
 
-                lastResult = result;
 
-                string entry = $"{num1} {op} {num2} = {result}";
-                HistoryBox.Text = entry + Environment.NewLine + HistoryBox.Text;
+                lastResult = result;//saving result
+
+                string entry = $"{num1} {op} {num2} = {result}";//Whole calculation in String
+                HistoryBox.Text = entry + Environment.NewLine + HistoryBox.Text;//Display in History box
 
                 Display.Text = result.ToString(CultureInfo.InvariantCulture);
-                number1 = result.ToString(CultureInfo.InvariantCulture);
-                number2 = "";
-                op = "";
-                operatorPressed = false;
+                number1 = result.ToString(CultureInfo.InvariantCulture);// result of the last calculation
+                number2 = "";//reset
+                op = "";//reset
+                operatorPressed = false;//reset
             }
+
             catch (DivideByZeroException)
             {
                 Display.Text = "Error";
@@ -278,7 +297,7 @@ namespace Calculator
                 MessageBox.Show($"Calculation error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
+        //display numbers and operators
         private void UpdateDisplay()
         {
             if (!operatorPressed)
@@ -289,8 +308,9 @@ namespace Calculator
                 Display.Text = number1 + " " + op + " " + number2;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e) => Focus();
+        private void Window_Loaded(object sender, RoutedEventArgs e) => Focus();//set Focus on window
 
+        //special keys 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Back)
@@ -309,6 +329,7 @@ namespace Calculator
         }
 
         // Ensure Enter/Return always triggers "=" even if a child control handles the key
+        //e details from the wpf keydown
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
             base.OnPreviewKeyDown(e);
@@ -319,12 +340,13 @@ namespace Calculator
             }
         }
 
+        //keyboard click
         private void SimulateButtonInput(string input)
         {
             var fakeButton = new Button { Content = input };
             var e = new RoutedEventArgs();
 
-            if (!string.IsNullOrEmpty(input) && (char.IsDigit(input[0]) || input == "."))
+            if (!string.IsNullOrEmpty(input) && (char.IsDigit(input[0]) /* Check if digit 0-9 */ || input == "."))
                 ButtonClickNumber(fakeButton, e);
             else if (input == "+" || input == "-" || input == "*" || input == "/")
                 ButtonClickOperator(fakeButton, e);
@@ -336,30 +358,37 @@ namespace Calculator
                 ButtonClickAllClear(fakeButton, e);
         }
 
+        // clear history box when "clear history" button is clicked
         private void HistoryClear_Click(object sender, RoutedEventArgs e)
         {
-            HistoryBox.Clear();
+            HistoryBox.Clear(); // remove all text from history
         }
 
-        // Löscht ALLE Memory-Einträge (für Button und Context-Menu)
+
+        // delete all memory entries and refresh memory display
         private void MemoryDeleteAll_Click(object sender, RoutedEventArgs e)
         {
-            memoryList.Clear();
-            RefreshMemoryUI();
+            memoryList.Clear(); // clear all stored memory items
+            RefreshMemoryUI();  // update UI to show empty memory
         }
 
+
+        // insert selected memory item into current number
         private void MemoryInsertSelected_Click(object sender, RoutedEventArgs e)
         {
-            if (GetSelectedMemory() is MemoryItem m)
-                InsertMemoryIntoCurrent(m.Value);
+            if (GetSelectedMemory() is MemoryItem m) // check if a memory item is selected
+                InsertMemoryIntoCurrent(m.Value);   // insert its value into current input
         }
 
+
+        // insert selected memory item into current number on double-click
         private void MemoryListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (GetSelectedMemory() is MemoryItem m)
-                InsertMemoryIntoCurrent(m.Value);
+            if (GetSelectedMemory() is MemoryItem m) // check if a memory item is selected
+                InsertMemoryIntoCurrent(m.Value);   // insert its value into current input
         }
+
     }
 }
 
-//updated with comments
+//updated with comments ver2
