@@ -45,6 +45,8 @@ namespace Calculator
 
         }
 
+
+
         //Methode of the numbers
         private void ButtonClickNumber(object sender, RoutedEventArgs e)
         {
