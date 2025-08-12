@@ -2,7 +2,9 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Calculator"
-        MinHeight="450"
+        Width="360"
+        Height="650"
+        MinHeight="650"
         MinWidth="360"
         WindowStartupLocation="CenterScreen"
         KeyDown="Window_KeyDown"
@@ -45,7 +47,8 @@
                          VerticalContentAlignment="Center"
                          BorderThickness="0"
                          Background="Transparent"
-                         Margin="0"/>
+                         Margin="0"
+                         Text="{Binding DisplayText}"/>
             </Grid>
         </Border>
 
@@ -138,13 +141,35 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch">
-                        <TextBlock Text="Memory" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <!-- Löscht alle Memory-Einträge -->
-                            <Button Content="Löschen" Margin="4,0,0,0" Padding="6,2" Click="MemoryDeleteAll_Click"/>
+                    <!-- -->
+                    <Grid Grid.Row="0" Margin="0,0,0,6">
+                        <!-- delete button stacked -->
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Memory"
+                                   Grid.Row="0"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,0,4"/>
+                        <!-- delete button stacked -->
+
+                        <StackPanel Grid.Row="1" Orientation="Vertical">
+                            <!-- delete all Memory-entrys -->
+                            <Button Content="Auswahl löschen" 
+                                    Margin="0,2" 
+                                    Padding="4,3" 
+                                    FontSize="11"
+                                    Click="MemoryDelete_Selected"/>
+                            <Button Content="Alle Löschen" 
+                                    Margin="0,2" 
+                                    Padding="4,3" 
+                                    FontSize="11"
+                                    Click="MemoryDeleteAll_Click"/>
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
 
                     <ListBox x:Name="MemoryListBox"
                              Grid.Row="1"

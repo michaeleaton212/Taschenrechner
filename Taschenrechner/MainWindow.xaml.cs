@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Collections.ObjectModel;
+
 
 namespace Calculator
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private string number1 = "";
         private string number2 = "";
@@ -25,14 +28,21 @@ namespace Calculator
         }
 
         //Memory item gets saved
-        private readonly List<MemoryItem> memoryList = new();
+        private ObservableCollection<MemoryItem>/*this list is only alowed in objects from the type MemoryItem  */ memoryList = new(); //TODO: New Class set
         private double lastResult = 0; // saves last result for MR
+
+        private string _displayText = ""; // backing field fürs Binding
+        public event PropertyChangedEventHandler? PropertyChanged; // INotifyPropertyChanged-Event
 
 
         //Start the wpf layout
         public MainWindow()
         {
             InitializeComponent();
+            MemoryListBox.ItemsSource = memoryList; // Connect with both together
+            DataContext = this; // Enable data binding for DisplayText property(current Window)
+
+
         }
 
         //Methode of the numbers
@@ -116,6 +126,7 @@ namespace Calculator
                     if (idx >= 0)
                     {
                         memoryList[idx].Value += memoryList[idx].Base;
+                        MemoryListBox.Items.Refresh(); // <<<< UI-Refresh ergänzen
                         RefreshMemoryUI(idx);
                     }
                 }
@@ -136,6 +147,7 @@ namespace Calculator
                     {
                         // decrease selected memory value by its base amount
                         memoryList[idx].Value -= memoryList[idx].Base;
+                        MemoryListBox.Items.Refresh(); // <<<< UI-Refresh ergänzen
                         // update memory display keeping selection on this entry
                         RefreshMemoryUI(idx);
                     }
@@ -209,31 +221,24 @@ namespace Calculator
         // or keep current selection if no index is provided
         private void RefreshMemoryUI(int? preserveSelectionIndex = null)
         {
-            // decide which memory index should stay selected
             int desiredIndex = preserveSelectionIndex ?? MemoryListBox.SelectedIndex;
 
-            // clear memory list in UI and add all memory items again
-            MemoryListBox.Items.Clear();
-            for (int i = 0; i < memoryList.Count; i++)
-                MemoryListBox.Items.Add(memoryList[i]);
 
             if (memoryList.Count > 0)
             {
-                // update memory label with count of stored entries and show it
                 MemoryLabel.Content = $"M: {memoryList.Count} Einträge";
                 MemoryLabel.Visibility = Visibility.Visible;
 
-                // reselect the previously selected memory item if valid
-                if (desiredIndex >= 0 && desiredIndex < MemoryListBox.Items.Count)
+                if (desiredIndex >= 0 && desiredIndex < memoryList.Count)
                     MemoryListBox.SelectedIndex = desiredIndex;
             }
             else
             {
-                // hide memory label if no entries exist and clear selection
                 MemoryLabel.Visibility = Visibility.Collapsed;
                 MemoryListBox.SelectedIndex = -1;
             }
         }
+
 
         // Calculation Method
         private void Calculate()
@@ -277,7 +282,7 @@ namespace Calculator
                 string entry = $"{num1} {op} {num2} = {result}";//Whole calculation in String
                 HistoryBox.Text = entry + Environment.NewLine + HistoryBox.Text;//Display in History box
 
-                Display.Text = result.ToString(CultureInfo.InvariantCulture);
+                DisplayText = result.ToString(CultureInfo.InvariantCulture);
                 number1 = result.ToString(CultureInfo.InvariantCulture);// result of the last calculation
                 number2 = "";//reset
                 op = "";//reset
@@ -286,26 +291,44 @@ namespace Calculator
 
             catch (DivideByZeroException)
             {
-                Display.Text = "Error";
+                DisplayText = "Error";
                 MessageBox.Show("Division by 0 is not allowed.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 number2 = "";
                 UpdateDisplay();
             }
             catch (Exception ex)
             {
-                Display.Text = "Error";
+                DisplayText = "Error";
                 MessageBox.Show($"Calculation error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+        // TODO: property und field display
+
+        public string DisplayText   //property
+        {
+            get => _displayText; //access to field
+            set//logic of field
+            {
+                _displayText = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayText)));
+            }
+        }
+
+
+
+
+
+
+
         //display numbers and operators
         private void UpdateDisplay()
         {
             if (!operatorPressed)
-                Display.Text = number1;
+                DisplayText = number1;
             else if (string.IsNullOrEmpty(number2))
-                Display.Text = number1 + " " + op;
+                DisplayText = number1 + " " + op;
             else
-                Display.Text = number1 + " " + op + " " + number2;
+                DisplayText = number1 + " " + op + " " + number2;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e) => Focus();//set Focus on window
@@ -372,6 +395,17 @@ namespace Calculator
             RefreshMemoryUI();  // update UI to show empty memory
         }
 
+        //delete selected
+        private void MemoryDelete_Selected(object sender, RoutedEventArgs e)//begins method, informatio gets provided
+        {
+            if (MemoryListBox.SelectedItem is MemoryItem item)// check if cklicked on item is in memoryitemwehen true createvar item 
+            {
+                memoryList.Remove(item);  // delete the exact item
+                RefreshMemoryUI();        // refresh because list no ui refreshes triggers
+            }
+        }
+
+
 
         // insert selected memory item into current number
         private void MemoryInsertSelected_Click(object sender, RoutedEventArgs e)
@@ -391,4 +425,4 @@ namespace Calculator
     }
 }
 
-//updated with comments ver2
+//updated with comments ver3
