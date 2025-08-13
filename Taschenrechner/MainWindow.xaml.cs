@@ -16,6 +16,9 @@ namespace Calculator
         private string number2 = "";
         private string op = "";
         private bool operatorPressed = false;
+        private const double SidebarWidth = 220;   // width of sidebar when showed
+        private const double ShowAtWidth = 560;   // display from this window width
+
 
 
         // Memory box that stores the "base" value after MS is pressed and the "value" after M+/M-
@@ -332,8 +335,41 @@ namespace Calculator
             else
                 DisplayText = number1 + " " + op + " " + number2;
         }
+        //Main funstion of the of the window, determines visible/ivisible based on window width
 
-        private void Window_Loaded(object sender, RoutedEventArgs e) => Focus();//set Focus on window
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+
+            Focus(); // Window gets focus
+        }
+
+
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e) // SizeChangedEventArgs send information form th e wpf to the c#
+        {
+            bool show = e.NewSize.Width >= ShowAtWidth; // e.NewSize.Width current width,    ShowAtWidth defined varibale for the size sidebar gets showed, 
+
+
+            if (show == true)
+            {
+                MemoryPanel.Visibility = Visibility.Visible; //set visible
+                RightPaneColumn.Width = new GridLength(SidebarWidth); //link to the wpf code, set length of the sidebar to the value of the variable sidebarwidth
+            }
+            else
+            {
+                MemoryPanel.Visibility = Visibility.Collapsed;//deactivate visibility
+                RightPaneColumn.Width = new GridLength(0); //link to the wpf code, set length of the sidebar to the value:
+            }
+
+
+        }
+
+
+
+
+
+
 
         //special keys 
         private void Window_KeyDown(object sender, KeyEventArgs e)

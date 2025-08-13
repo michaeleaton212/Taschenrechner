@@ -10,17 +10,29 @@
         KeyDown="Window_KeyDown"
         TextInput="Window_TextInput"
         Loaded="Window_Loaded"
+        SizeChanged="Window_SizeChanged"
         Focusable="True">
+    <!--Window_SizeChanged call the method when the size of the window changes-->
 
+    <!-- Root-Grid -->
     <Grid Margin="10">
+        <!-- Zeilenaufteilung -->
         <Grid.RowDefinitions>
             <RowDefinition Height="3*"/>
             <RowDefinition Height="10*"/>
             <RowDefinition Height="5*"/>
         </Grid.RowDefinitions>
 
+        <!-- Column layout: left main area, right memory -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <!-- left main area -->
+            <ColumnDefinition x:Name="RightPaneColumn" Width="220" />
+            <!-- right sidebar -->
+        </Grid.ColumnDefinitions>
+
         <!-- Display -->
-        <Border Grid.Row="0" Margin="0" Padding="10" BorderThickness="0,0,0,1" BorderBrush="LightGray">
+        <Border Grid.Row="0" Grid.Column="0" Margin="0" Padding="10" BorderThickness="0,0,0,1" BorderBrush="LightGray">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -53,7 +65,7 @@
         </Border>
 
         <!-- Keypad -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
@@ -64,6 +76,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -100,90 +113,84 @@
             <Button Content="="  Grid.Row="6" Grid.Column="3" Margin="3" Click="ButtonClickEquals"/>
         </Grid>
 
-        <!-- History & Memory Panel -->
-        <Grid Grid.Row="2" Margin="0,10,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <!-- Verlauf -->
+        <Grid Grid.Row="2" Grid.Column="0" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <!-- Verlauf -->
-            <Grid Grid.Column="0" Margin="0,0,8,0">
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch">
+                <TextBlock Text="Verlauf" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Löschen" Margin="8,0,0,0" Padding="8,4" Click="HistoryClear_Click"/>
+                </StackPanel>
+            </StackPanel>
+
+            <TextBox x:Name="HistoryBox"
+                     Grid.Row="1"
+                     FontSize="14"
+                     IsReadOnly="True"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalAlignment="Stretch"
+                     TextAlignment="Left"
+                     AcceptsReturn="True"
+                     VerticalAlignment="Stretch"/>
+        </Grid>
+
+        <!-- Memory Panel, own grid -->
+        <Border x:Name="MemoryPanel"
+                Grid.Row="1" Grid.Column="1" Grid.RowSpan="2"
+                Margin="10,0,0,0"
+                Padding="8"
+                BorderBrush="#DDD" BorderThickness="1" CornerRadius="6"
+                MinWidth="170">
+            <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <TextBlock Text="Verlauf" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Löschen" Margin="8,0,0,0" Padding="8,4" Click="HistoryClear_Click"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <TextBox x:Name="HistoryBox"
-                         Grid.Row="1"
-                         FontSize="14"
-                         IsReadOnly="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"
-                         HorizontalAlignment="Stretch"
-                         TextAlignment="Left"
-                         AcceptsReturn="True"
-                         VerticalAlignment="Stretch"/>
-            </Grid>
-
-            <!-- Memory Panel -->
-            <Border Grid.Column="1" Padding="8" BorderBrush="#DDD" BorderThickness="1" CornerRadius="6">
-                <Grid>
+                <Grid Grid.Row="0" Margin="0,0,0,6">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- -->
-                    <Grid Grid.Row="0" Margin="0,0,0,6">
-                        <!-- delete button stacked -->
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                    <TextBlock Text="Memory"
+                               Grid.Row="0"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="0,0,0,4"/>
 
-                        <TextBlock Text="Memory"
-                                   Grid.Row="0"
-                                   FontWeight="SemiBold"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,0,4"/>
-                        <!-- delete button stacked -->
-
-                        <StackPanel Grid.Row="1" Orientation="Vertical">
-                            <!-- delete all Memory-entrys -->
-                            <Button Content="Auswahl löschen" 
-                                    Margin="0,2" 
-                                    Padding="4,3" 
-                                    FontSize="11"
-                                    Click="MemoryDelete_Selected"/>
-                            <Button Content="Alle Löschen" 
-                                    Margin="0,2" 
-                                    Padding="4,3" 
-                                    FontSize="11"
-                                    Click="MemoryDeleteAll_Click"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <ListBox x:Name="MemoryListBox"
-                             Grid.Row="1"
-                             Margin="0,6,0,6"
-                             MouseDoubleClick="MemoryListBox_MouseDoubleClick">
-                        <ListBox.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Header="Einfügen" Click="MemoryInsertSelected_Click"/>
-                                <MenuItem Header="Löschen"  Click="MemoryDeleteAll_Click"/>
-                            </ContextMenu>
-                        </ListBox.ContextMenu>
-                    </ListBox>
+                    <StackPanel Grid.Row="1" Orientation="Vertical">
+                        <Button Content="Auswahl löschen"
+                                Margin="0,2"
+                                Padding="4,3"
+                                FontSize="11"
+                                Click="MemoryDelete_Selected"/>
+                        <Button Content="Alle Löschen"
+                                Margin="0,2"
+                                Padding="4,3"
+                                FontSize="11"
+                                Click="MemoryDeleteAll_Click"/>
+                    </StackPanel>
                 </Grid>
-            </Border>
-        </Grid>
+
+                <ListBox x:Name="MemoryListBox"
+                         Grid.Row="1"
+                         Margin="0,6,0,6"
+                         MouseDoubleClick="MemoryListBox_MouseDoubleClick">
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Einfügen" Click="MemoryInsertSelected_Click"/>
+                            <MenuItem Header="Löschen"  Click="MemoryDeleteAll_Click"/>
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                </ListBox>
+            </Grid>
+        </Border>
+
     </Grid>
 </Window>
